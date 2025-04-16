@@ -5,6 +5,7 @@ from config import *
 from products import products_bp
 from orders import orders_bp
 from cart import cart_bp
+from customers import customers_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +14,7 @@ CORS(app)
 app.register_blueprint(products_bp)
 app.register_blueprint(orders_bp)
 app.register_blueprint(cart_bp)
+app.register_blueprint(customers_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
