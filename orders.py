@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 import requests
 from config import SHOPIFY_BASE_URL, SHOPIFY_AUTH
 from utils import storefront_graphql
+from products import admin_required
 
 orders_bp = Blueprint('orders', __name__)
 
@@ -113,3 +114,30 @@ def update_order(order_id):
     update_data = request.json or {}
     r = requests.put(f"{SHOPIFY_BASE_URL}/orders/{order_id}.json", auth=SHOPIFY_AUTH, json={'order': update_data})
     return jsonify(r.json())
+
+# --- Fulfillment Management (Admin API) ---
+@orders_bp.route('/orders/<order_id>/fulfillments', methods=['POST'])
+@admin_required
+def create_fulfillment(order_id):
+    data = request.json or {}
+    r = requests.post(f"{SHOPIFY_BASE_URL}/orders/{order_id}/fulfillments.json", auth=SHOPIFY_AUTH, json={'fulfillment': data})
+    return jsonify(r.json()), r.status_code
+
+@orders_bp.route('/orders/<order_id>/fulfillments/<fulfillment_id>', methods=['PUT'])
+@admin_required
+def update_fulfillment(order_id, fulfillment_id):
+    data = request.json or {}
+    r = requests.put(f"{SHOPIFY_BASE_URL}/orders/{order_id}/fulfillments/{fulfillment_id}.json", auth=SHOPIFY_AUTH, json={'fulfillment': data})
+    return jsonify(r.json()), r.status_code
+
+@orders_bp.route('/orders/<order_id>/fulfillments/<fulfillment_id>/cancel', methods=['POST'])
+@admin_required
+def cancel_fulfillment(order_id, fulfillment_id):
+    r = requests.post(f"{SHOPIFY_BASE_URL}/orders/{order_id}/fulfillments/{fulfillment_id}/cancel.json", auth=SHOPIFY_AUTH)
+    return jsonify(r.json()), r.status_code
+
+@orders_bp.route('/orders/<order_id>/fulfillments/<fulfillment_id>', methods=['GET'])
+@admin_required
+def get_fulfillment_detail(order_id, fulfillment_id):
+    r = requests.get(f"{SHOPIFY_BASE_URL}/orders/{order_id}/fulfillments/{fulfillment_id}.json", auth=SHOPIFY_AUTH)
+    return jsonify(r.json().get('fulfillment', {})), r.status_code
